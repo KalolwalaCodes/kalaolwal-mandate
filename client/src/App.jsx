@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import ConsultingAgreementForm from './Components/Forms/Forms1';
 import LoginForm from './Components/Forms/Loginform';
 import Landingpage from './pages/Landingpage';
 import { Button } from "./Components/ui/button"

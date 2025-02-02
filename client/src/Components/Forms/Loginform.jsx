@@ -28,7 +28,7 @@ export default function LoginForm({onLogin}) {
       <div className="hidden lg:flex bg-[#2A2E33] items-center justify-center p-8">
         <div className="w-[400px]">
           <img
-            src="/public/logo.png"
+            src="/logo.png"
             alt="Kalolwala Logo"
             className="w-full"
           />
