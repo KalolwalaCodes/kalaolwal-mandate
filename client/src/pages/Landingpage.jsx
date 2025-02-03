@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import MultiInputForm from '../Components/Forms/Forms1';
 import DocxViewer from '@/Components/Forms/EditText';
+import EditText2 from '@/Components/Forms/EditText2';
 
 const pdfData = [
   { id: 1, title: "Proposal Template_AR & IR", url: "/demo-data/proposaltemplate.pdf" },
@@ -70,7 +71,8 @@ export default function Landingpage() {
         </div>
        
      {mandateState==0&& <MultiInputForm  activeMandate={activeMandate} setViewMandate={setViewMandate}/>}
-     {mandateState==1&& <DocxViewer  activeMandate={activeMandate} setViewMandate={setViewMandate}/>}
+     {/* {mandateState==1&& <DocxViewer  activeMandate={activeMandate} setViewMandate={setViewMandate}/>} */}
+     <EditText2/>
       </div>
       }
     </div>
