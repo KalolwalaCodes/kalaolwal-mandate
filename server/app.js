@@ -9,7 +9,7 @@ const path = require("path");
 const cors = require("cors");
 const { rm, mkdirSync, existsSync, writeFileSync } = require("fs");
 const app = express();
-const port = 3000;
+const port = 4000;
 
 const upload = multer({ dest: "uploads/" });
 
@@ -91,6 +91,12 @@ app.post("/api/download", (req, res) => {
   });
 });
 
+
+
+
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
 app.post("/api/upload", upload.single("file"), (req, res) => {
   const file = req.file;
   if (!file) {
@@ -117,21 +123,15 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
         res.send(paragraphs)
     });
 
-    // Deleting all the files created
-    fs.readdirSync(path.resolve("./uploads")).forEach((f) => {
-      if(f.startsWith(file.filename)) {
-        fs.unlinkSync(path.resolve(`./uploads/${f}`));
-      }
-    })
+    // // Deleting all the files created
+    // fs.readdirSync(path.resolve("./uploads")).forEach((f) => {
+    //   if(f.startsWith(file.filename)) {
+    //     fs.unlinkSync(path.resolve(`./uploads/${f}`));
+    //   }
+    // })
   });
 
 });
-
-
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
-
 /**
  * 
  * @param {string} file Takes path to a PDF file.
@@ -145,5 +145,6 @@ const convertToHtml = async (file) => {
     ignoreImages: true,
     singlePage: true,
   });
+  console.log(`${file}-html.html`)
   return path.resolve(`${file}-html.html`);
 };

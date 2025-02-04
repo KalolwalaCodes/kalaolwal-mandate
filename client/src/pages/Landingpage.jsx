@@ -7,7 +7,7 @@ import DocxViewer from '@/Components/Forms/EditText';
 import EditText2 from '@/Components/Forms/EditText2';
 
 const pdfData = [
-  { id: 1, title: "Proposal Template_AR & IR", url: "/demo-data/proposaltemplate.pdf" },
+  { id: 1, title: "Proposal Template_AR & IR", url: "./demo-data/sample-cv.pdf" },
   { id: 2, title: "Proposal Template_website", url: "./demo-data/proposaltemplate.pdf" },
   { id: 3, title: "Proposal Template_Video", url: "./demo-data/proposaltemplate.pdf" },
   { id: 4, title: "Proposal Template_demo4", url: "./demo-data/proposaltemplate.pdf" },
@@ -72,7 +72,9 @@ export default function Landingpage() {
        
      {mandateState==0&& <MultiInputForm  activeMandate={activeMandate} setViewMandate={setViewMandate}/>}
      {/* {mandateState==1&& <DocxViewer  activeMandate={activeMandate} setViewMandate={setViewMandate}/>} */}
-     <EditText2/>
+     {mandateState === 1 && activeMandate && (
+            <EditText2 pdfUrl={activeMandate.url} />
+          )}
       </div>
       }
     </div>

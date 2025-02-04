@@ -37,7 +37,7 @@ export default function MultiInputForm({ activeMandate, setViewMandate }) {
         formDataObj[key] = formData[key];
       });
   
-      const response = await fetch("http://localhost:3000/api/download", {
+      const response = await fetch("http://localhost:4000/api/download", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",  // Set content type to JSON
