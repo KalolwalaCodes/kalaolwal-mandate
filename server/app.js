@@ -123,12 +123,12 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
         res.send(paragraphs)
     });
 
-    // // Deleting all the files created
-    // fs.readdirSync(path.resolve("./uploads")).forEach((f) => {
-    //   if(f.startsWith(file.filename)) {
-    //     fs.unlinkSync(path.resolve(`./uploads/${f}`));
-    //   }
-    // })
+    // Deleting all the files created
+    fs.readdirSync(path.resolve("./uploads")).forEach((f) => {
+      if(f.startsWith(file.filename)) {
+        fs.unlinkSync(path.resolve(`./uploads/${f}`));
+      }
+    })
   });
 
 });
