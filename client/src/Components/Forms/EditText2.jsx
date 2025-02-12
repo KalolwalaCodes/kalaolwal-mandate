@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 
 // Now EditText2 receives a pdfUrl prop
-const EditText2 = ({ pdfUrl, form }) => {
+const EditText2 = ({ pdfUrl, form, setMandateEditingView }) => {
   const [extractedData, setExtractedData] = useState([]);
   const pdfContainer = useRef();
 
@@ -119,21 +119,6 @@ const EditText2 = ({ pdfUrl, form }) => {
   // Existing saveFile functionality remains unchanged.
   const saveFile = async () => {
     // Logic to add page breaks dynamically
-    const children = pdfContainer.current.children;
-    const maxPageHeight = 1050;
-    for (let i = 0; i < children.length; i++) {
-      if (
-        children[i].offsetHeight > maxPageHeight
-        //  - pageHeaderImage.current.offsetHeight
-      ) {
-        alert(
-          "Element too big to fit in one page. Please divide it into smaller paragraphs."
-        );
-        return;
-      }
-    }
-    // await html2pdf().from(pdfContainer.current).save();
-
     const raw = await fetch("http://localhost:4000/convert/html", {
       method: "POST",
       headers: {
@@ -157,7 +142,7 @@ const EditText2 = ({ pdfUrl, form }) => {
   return (
     <>
       {/* Removed the file input since we are using the URL */}
-      <div className="flex justify-center gap-4 my-4">
+      <div className="flex flex-wrap justify-center gap-4 my-4 items-center">
         <button
           className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
           onClick={submitFile}
@@ -177,7 +162,8 @@ const EditText2 = ({ pdfUrl, form }) => {
 
         <button
           className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
-          onClick={(e) => {
+          onMouseDown={(e) => {
+            e.preventDefault();
             document.execCommand("bold", false, null);
           }}
         >
@@ -186,7 +172,8 @@ const EditText2 = ({ pdfUrl, form }) => {
 
         <button
           className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
-          onClick={(e) => {
+          onMouseDown={(e) => {
+            e.preventDefault();
             document.execCommand("italic", false, null);
           }}
         >
@@ -195,7 +182,8 @@ const EditText2 = ({ pdfUrl, form }) => {
 
         <button
           className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
-          onClick={(e) => {
+          onMouseDown={(e) => {
+            e.preventDefault();
             document.execCommand("underline", false, null);
           }}
         >
@@ -204,7 +192,7 @@ const EditText2 = ({ pdfUrl, form }) => {
 
         <button
           className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
-          onClick={(e) => {
+          onMouseDown={(e) => {
             e.preventDefault();
             document.execCommand("insertOrderedList");
           }}
@@ -213,38 +201,66 @@ const EditText2 = ({ pdfUrl, form }) => {
         </button>
         <button
           className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
-          onClick={(e) => {
+          onMouseDown={(e) => {
             e.preventDefault();
             document.execCommand("insertUnorderedList");
           }}
         >
           UL
         </button>
-      </div>
-      <div className="flex justify-center h-[70vh] border-2 w-fit mx-auto">
-        <div
-          style={{
-            width: "720px",
+        <button
+          className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            document.execCommand("insertHTML", false, costOfImagesTable);
           }}
+        >
+          Cost of Images Table
+        </button>
+
+        <button
+          className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            document.execCommand("insertHTML", false, paymentTable);
+          }}
+        >
+          Payment Table
+        </button>
+
+        <button
+          className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            document.execCommand("insertHTML", false, scopeOfWork);
+          }}
+        >
+          Scope of work Table
+        </button>
+        {/* <DropdownMenuDemo /> */}
+      </div>
+      <div className="w-[800px] flex justify-center h-[70vh] border-2 mx-auto">
+        <div
           contentEditable={true}
-          className="px-6 overflow-auto border-none outline-none"
+          className="overflow-auto border-none outline-none px-6"
           ref={pdfContainer}
         >
-          <div></div>
-
           {extractedData.map((data, index) =>
             page_end_delimeter.test(data) ? (
               <span key={index}></span>
             ) : (
-              <p
+              <pre
                 style={{
                   fontSize: "16px",
                   fontFamily: "Arial, Helvetica, sans-serif",
-                  lineHeight: "22px",
+                  width: "100%",
+                  whiteSpace: "pre-wrap",
                 }}
                 key={index}
-                dangerouslySetInnerHTML={{ __html: data }}
-              ></p>
+                dangerouslySetInnerHTML={{
+                  __html: data.replaceAll("&nbsp;", " ").replaceAll("<br>", ""),
+                }}
+              ></pre>
             )
           )}
         </div>
@@ -257,20 +273,85 @@ export default EditText2;
 
 const page_end_delimeter = /<i>\d+\/\d+&nbsp;<\/i>/i;
 
-function toDataURL(url, callback) {
-  var xhr = new XMLHttpRequest();
-  xhr.onload = function () {
-    var reader = new FileReader();
-    reader.onloadend = function () {
-      callback(reader.result);
-    };
-    reader.readAsDataURL(xhr.response);
-  };
-  xhr.open("GET", url);
-  xhr.responseType = "blob";
-  xhr.send();
-}
+const costOfImagesTable = `<table style="font-family: Arial, Helvetica, sans-serif; font-size: 16px; borderCollapse: collapse; margin: auto">
+<tr>
+<th style="border: 1px solid black; padding: 5px 10px" colSpan="3">Shutterstock</th>
+</tr>
+<tr>
+<td style="border: 1px solid black; padding: 5px 10px">Upto 2 images</td>
+<td style="border: 1px solid black; padding: 5px 10px">Upto 5 images</td>
+<td style="border: 1px solid black; padding: 5px 10px">Upto 25 images</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; padding: 5px 10px">USD 29</td>
+<td style="border: 1px solid black; padding: 5px 10px">USD 49</td>
+<td style="border: 1px solid black; padding: 5px 10px">USD 229</td>
+</tr>
+<tr>
+<th style="border: 1px solid black; padding: 5px 10px" colSpan="3">iStock</th>
+</tr>
+<tr>
+<td style="border: 1px solid black; padding: 5px 10px">Upto 10 images</td>
+<td style="border: 1px solid black; padding: 5px 10px">Upto 25 images</td>
+<td style="border: 1px solid black; padding: 5px 10px">Upto 50 images</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; padding: 5px 10px">INR 1,700</td>
+<td style="border: 1px solid black; padding: 5px 10px">INR 4,250</td>
+<td style="border: 1px solid black; padding: 5px 10px">INR 6,750</td>
+</tr>
+<tr>
+<th style="border: 1px solid black; padding: 5px 10px" colSpan="3">Getty</th>
+</tr>
+<tr>
+<td style="border: 1px solid black; padding: 5px 10px" colSpan="3">
+-------------------------- Client to provide -----------------------------
+</td>
+</tr>
+<tr>
+<th style="border: 1px solid black; padding: 5px 10px" colSpan="3">Images Bazar</th>
+</tr>
+<tr>
+<td style="border: 1px solid black; padding: 5px 10px" colSpan="3">
+-------------------------- Client to provide -----------------------------
+</td>
+</tr>
+</table>`;
 
-// toDataURL('https://www.gravatar.com/avatar/d50c83cc0c6523b4d3f6085295c953e0', function(dataUrl) {
-//   console.log('RESULT:', dataUrl)
-// })
+const paymentTable = `
+<table style="font-family: Arial, Helvetica, sans-serif; borderCollapse: collapse; margin: auto">
+<tr>
+<th style="border: 1px solid black; padding: 5px 10px">Milestones</th>
+<th style="border: 1px solid black; padding: 5px 10px">Payment</th>
+</tr>
+
+<tr>
+<td style="border: 1px solid black; padding: 5px 10px">At  the  time  of  signing  of  the  contract  / 
+Purchase Order</td>
+<td style="border: 1px solid black; padding: 5px 10px">50%</td>
+</tr>
+
+<tr>
+<td style="border: 1px solid black; padding: 5px 10px">First Draft of Content + First cut of Design</td>
+<td style="border: 1px solid black; padding: 5px 10px">30%</td>
+</tr>
+
+<tr>
+<td style="border: 1px solid black; padding: 5px 10px">Before release of the printable file</td>
+<td style="border: 1px solid black; padding: 5px 10px">20%</td>
+</tr>
+
+</table>
+`;
+
+const scopeOfWork = `<table style="font-family: Arial, Helvetica, sans-serif; borderCollapse: collapse; margin: auto">
+<tr>
+<th style="border: 1px solid black; padding: 5px 10px">Particulars</th>
+<th style="border: 1px solid black; padding: 5px 10px">Scope</th>
+</tr>
+
+<tr>
+<td style="border: 1px solid black; padding: 5px 10px"> </td>
+<td style="border: 1px solid black; padding: 5px 10px"> </td>
+</tr>
+</table>`;

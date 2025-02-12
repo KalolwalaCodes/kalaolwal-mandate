@@ -19,9 +19,9 @@ const upload = multer({ dest: "uploads/" });
 app.use(express.static("static"));
 
 // Middleware to parse JSON bodies
-app.use(express.json({limit: '10mb'}));
-app.use(bodyParser.json({limit: '10mb'}));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 app.use(cors("*"));
 const inputPath = "./Proposal Template_Non AR.docx";
@@ -145,7 +145,6 @@ app.post("/convert/html", (req, res) => {
   });
 });
 
-
 /**
  *
  * @param {string} file Takes path to a PDF file.
@@ -164,17 +163,33 @@ const convertToHtml = async (file) => {
 
 async function convertToPdf(htmlContent) {
   // Launch a headless browser
-  const browser = await launch();
+  const browser = await launch({ headless: true });
   const page = await browser.newPage();
   const outputFile = `./output/${Math.round(Math.random() * 1000000)}.pdf`;
 
   // Set content (HTML string)
-  await page.setContent(htmlContent, { waitUntil: "domcontentloaded" });
+  await page.setContent(`${htmlContent}`, { waitUntil: "domcontentloaded" });
+
+  await page.waitForFunction(() => {
+    const cells = document.getElementsByTagName("td");
+    for (let i = 0; i < cells.length; i++) {
+      cells[i].style.border = "1px solid black"
+    }
+    const headings = document.getElementsByTagName("th")
+    for (let i = 0; i < headings.length; i++) {
+      headings[i].style.border = "1px solid black"
+    }
+    const tables = document.getElementsByTagName("table")
+    for (let i = 0; i < tables.length; i++) {
+      tables[i].style.borderCollapse = "collapse"
+    }
+    return 1;
+  });
   // Generate PDF
   await page.pdf({
     path: outputFile, // Save as file
     printBackground: true, // Include background styles
-    margin: { top: "150px", bottom: "20px", left: "30px", right: "30px" },
+    margin: { top: "150px", bottom: "30px", left: "35px", right: "35px" },
     preferCSSPageSize: true,
     waitForFonts: true,
     height: "1128px",

@@ -6,26 +6,7 @@ import Docxtemplater from "docxtemplater";
 const DocxViewer = () => {
   const [fileName, setFileName] = useState("");
   const [docContent, setDocContent] = useState(null);
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    setFileName(file.name);
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target.result;
-      try {
-        const zip = new PizZip(content);
-        const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-        const text = doc.getFullText(); // Extract styled text
-        setDocContent(text);
-      } catch (error) {
-        console.error("Error parsing .docx file:", error);
-        alert("Failed to load document.");
-      }
-    };
-    reader.readAsBinaryString(file);
-  };
+  
 
   const handleSave = () => {
     const zip = new PizZip();
