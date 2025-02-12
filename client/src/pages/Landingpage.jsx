@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FileText } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import MultiInputForm from '../Components/Forms/Forms1';
-import DocxViewer from '@/Components/Forms/EditText';
 import EditText2 from '@/Components/Forms/EditText2';
 
 const pdfData = [
@@ -16,7 +15,20 @@ const pdfData = [
 ]
 
 export default function Landingpage() {
-
+  const [formData, setFormData] = useState({
+    kaplNumber: "",
+    agreementDate: "",
+    clientName: "",
+    clientOffice: "",
+    clientBusiness: "",
+    arbitrationPlace: "",
+    makerName: "",
+    makerDesignation: "",
+    signatureDate: "",
+    stamp: null,
+    // price: "",
+    // gstPercentage: "",
+  });
 
     const[viewMandate, setViewMandate] = useState(true);
     const[activeMandate,setActiveMandate] = useState(null);
@@ -29,7 +41,7 @@ export default function Landingpage() {
     <div className="container mx-auto py-8">
       {viewMandate?
       <>
-      <h1 className="text-2xl font-bold mb-6">PDF Documents</h1>
+      <h1 className=" text-2xl font-bold mb-6">PDF Documents</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {pdfData.map((pdf) => (
           <Card key={pdf.id} className="flex flex-col">
@@ -70,10 +82,10 @@ export default function Landingpage() {
             </Button>
         </div>
        
-     {mandateState==0&& <MultiInputForm  activeMandate={activeMandate} setViewMandate={setViewMandate}/>}
+     {mandateState==0 && <MultiInputForm  activeMandate={activeMandate} setViewMandate={setViewMandate} formData={formData} setFormData={setFormData}/>}
      {/* {mandateState==1&& <DocxViewer  activeMandate={activeMandate} setViewMandate={setViewMandate}/>} */}
      {mandateState === 1 && activeMandate && (
-            <EditText2 pdfUrl={activeMandate.url} />
+            <EditText2 pdfUrl={activeMandate.url} form={formData} />
           )}
       </div>
       }

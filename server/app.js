@@ -7,20 +7,26 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
-const { rm, mkdirSync, existsSync, writeFileSync } = require("fs");
+const { launch } = require("puppeteer");
+const { rm, mkdirSync, existsSync } = require("fs");
 const app = express();
 const port = 4000;
+if (!existsSync("output")) mkdirSync("output");
 
 const upload = multer({ dest: "uploads/" });
 
+// Serving the static files
+app.use(express.static("static"));
+
 // Middleware to parse JSON bodies
-app.use(express.json());
-app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({limit: '10mb'}));
+app.use(bodyParser.json({limit: '10mb'}));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.use(cors("*"));
 const inputPath = "./Proposal Template_Non AR.docx";
 const outputPath = "./demo_new_final_Updated_Proposal_Template.docx";
+const headerImagePath = path.resolve("./static/header.jpg");
 
 const oldText = [
   "KAPL/__/25-26",
@@ -91,12 +97,6 @@ app.post("/api/download", (req, res) => {
   });
 });
 
-
-
-
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
 app.post("/api/upload", upload.single("file"), (req, res) => {
   const file = req.file;
   if (!file) {
@@ -120,20 +120,34 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
       });
       paragraphs = paragraphs.filter((line) => line.trim().length > 0);
 
-        res.send(paragraphs)
+      res.send(paragraphs);
     });
 
     // Deleting all the files created
     fs.readdirSync(path.resolve("./uploads")).forEach((f) => {
-      if(f.startsWith(file.filename)) {
+      if (f.startsWith(file.filename)) {
         fs.unlinkSync(path.resolve(`./uploads/${f}`));
       }
-    })
+    });
   });
-
 });
+
+app.post("/convert/html", (req, res) => {
+  const htmlContent = req.body.html;
+
+  convertToPdf(htmlContent).then((path) => {
+    fs.readFile(path, null, (err, file) => {
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Length", file.byteLength);
+      res.setHeader("Content-Disposition", "attachment; filename=download");
+      res.write(file, "binary", (error) => rm(path, () => {}));
+    });
+  });
+});
+
+
 /**
- * 
+ *
  * @param {string} file Takes path to a PDF file.
  * @returns path to the HTML file.
  * Takes a pdf file and generates an HTML file.
@@ -145,6 +159,51 @@ const convertToHtml = async (file) => {
     ignoreImages: true,
     singlePage: true,
   });
-  console.log(`${file}-html.html`)
   return path.resolve(`${file}-html.html`);
 };
+
+async function convertToPdf(htmlContent) {
+  // Launch a headless browser
+  const browser = await launch();
+  const page = await browser.newPage();
+  const outputFile = `./output/${Math.round(Math.random() * 1000000)}.pdf`;
+
+  // Set content (HTML string)
+  await page.setContent(htmlContent, { waitUntil: "domcontentloaded" });
+  // Generate PDF
+  await page.pdf({
+    path: outputFile, // Save as file
+    printBackground: true, // Include background styles
+    margin: { top: "150px", bottom: "20px", left: "30px", right: "30px" },
+    preferCSSPageSize: true,
+    waitForFonts: true,
+    height: "1128px",
+    width: "800px",
+    displayHeaderFooter: true,
+    headerTemplate: `<div style="height: 120px; width: 100%; font-size: 16px; font-family: Arial, Helvetica, sans-serif; margin-left:50px; margin-right: 50px; display: flex; justify-content: space-between; align-items: center; width:100%">
+  <div style="display: flex; flex-direction: column;">
+  <img height="100%" style="width: 100%;" src="data:image/png;base64,${base64Encode(
+    headerImagePath
+  )}"/>
+</div>
+`,
+    footerTemplate: "<span></span>",
+  });
+
+  // Close the browser
+  await browser.close();
+
+  return outputFile;
+}
+
+app.get("/hello", (req, res) => {
+  res.json(JSON.stringify({ name: "Sumit" }));
+});
+
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
+
+function base64Encode(file) {
+  return fs.readFileSync(file, { encoding: "base64" });
+}

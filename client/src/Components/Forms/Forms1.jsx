@@ -1,50 +1,64 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/lable";
 
-export default function MultiInputForm({ activeMandate, setViewMandate }) {
-  
-  const [formData, setFormData] = useState({
-    kaplNumber: "",
-    agreementDate: "",
-    clientName: "",
-    clientOffice: "",
-    clientBusiness: "",
-    arbitrationPlace: "",
-    makerName: "",
-    makerDesignation: "",
-    signatureDate: "",
-    stamp: null,
-    // price: "",
-    // gstPercentage: "",
-  });
-
-  const handleChange = (e) => {
+export default function MultiInputForm({
+  activeMandate,
+  setViewMandate,
+  formData,
+  setFormData,
+}) {
+  const handleChange = async (e) => {
     const { id, value, type, files } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: type === "file" ? files[0] : value,
-    }));
+
+    if (type === "file") {
+      try {
+        const url= await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(files[0]);
+          
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (error) => reject(error);
+        });
+        setFormData((prev) => ({
+          ...prev,
+          [id]: url,
+        }));
+      } catch (e) {
+        alert("Failed to upload stamp. Please try again.");
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [id]: value,
+      }));
+    }
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
-      const formDataObj = {};  // Initialize a plain object to hold the form data
+      const formDataObj = {}; // Initialize a plain object to hold the form data
       Object.keys(formData).forEach((key) => {
         formDataObj[key] = formData[key];
       });
-  
+
       const response = await fetch("http://localhost:4000/api/download", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",  // Set content type to JSON
+          "Content-Type": "application/json", // Set content type to JSON
         },
-        body: JSON.stringify({ newText: formDataObj }),  // Send formData as a plain object
+        body: JSON.stringify({ newText: formDataObj }), // Send formData as a plain object
       });
-  
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -56,7 +70,6 @@ export default function MultiInputForm({ activeMandate, setViewMandate }) {
       console.error("Error during form submission:", error);
     }
   };
-  
 
   return (
     <>
@@ -68,7 +81,9 @@ export default function MultiInputForm({ activeMandate, setViewMandate }) {
       </button>
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">{activeMandate.title}</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            {activeMandate.title}
+          </CardTitle>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6">
@@ -128,7 +143,9 @@ export default function MultiInputForm({ activeMandate, setViewMandate }) {
                 />
               </div> */}
               <div className="space-y-2">
-                <Label htmlFor="arbitrationPlace">Seat or Place of Arbitration</Label>
+                <Label htmlFor="arbitrationPlace">
+                  Seat or Place of Arbitration
+                </Label>
                 <Input
                   id="arbitrationPlace"
                   type="text"
@@ -165,11 +182,7 @@ export default function MultiInputForm({ activeMandate, setViewMandate }) {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="stamp">Stamp</Label>
-                <Input
-                  id="stamp"
-                  type="file"
-                  onChange={handleChange}
-                />
+                <Input id="stamp" type="file" onChange={handleChange} />
               </div>
             </div>
             {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

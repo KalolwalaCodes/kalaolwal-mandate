@@ -1,11 +1,9 @@
-import html2pdf from "html2pdf.js";
 import React, { useRef, useState, useEffect } from "react";
 
 // Now EditText2 receives a pdfUrl prop
-const EditText2 = ({ pdfUrl }) => {
+const EditText2 = ({ pdfUrl, form }) => {
   const [extractedData, setExtractedData] = useState([]);
   const pdfContainer = useRef();
-  const pageHeaderImage = useRef();
 
   // Modified submitFile function: fetches PDF from URL instead of using a file input
   const submitFile = async () => {
@@ -31,66 +29,80 @@ const EditText2 = ({ pdfUrl }) => {
         body: formData,
       });
       const res = await raw.json();
-      console.log("Response from backend:", res);
 
       // Process the response (this example reuses your filtering logic)
       const filteredData = [];
       for (let i = 0; i < res.length; i++) {
-        filteredData.push(res[i]);
-        // Example: if you detect a specific piece of text, insert extra HTML
+        let str = res[i];
+        if (str.includes("<b>KAPL/__/25-26&nbsp;</b>"))
+          str = str.replace(
+            "<b>KAPL/__/25-26&nbsp;</b>",
+            `<b>${form.kaplNumber}</b>`
+          );
         if (
-          res[i] ===
-          "<b>Scope&nbsp;of&nbsp;Work&nbsp;(________________)&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>__________,&nbsp;_______________________,&nbsp;________________&nbsp;</b>"
-        ) {
-          filteredData.push(`
-            <p>&nbsp;</p>
-            <p>&nbsp;</p>
-            <p>&nbsp;</p>
-            <table class="border-black border-x border-t border-collapse w-full">
-              <tr class="border-black border-b border-collapse">
-                <th class="border-black border-x w-[30%] p-1">Particulars</th>
-                <th class="border-black border-x p-1">Scope of work</th>
-              </tr>
-              <tr class="border-black border-b border-collapse">
-                <td class="border-black border-x p-1" contentEditable>Data</td>
-                <td class="border-black border-x p-1" contentEditable>Data</td>
-              </tr>
-            </table>
-            <p>&nbsp;</p>
-            <p>&nbsp;</p>
-            <p>&nbsp;</p>
-          `);
-        }
-        // Break out of the loop if a certain marker is reached
+          str.includes(
+            "is&nbsp;&nbsp;made&nbsp;effective&nbsp;&nbsp;on&nbsp;&nbsp;<b>__/__/20__</b>"
+          )
+        )
+          str = str.replace(
+            "is&nbsp;&nbsp;made&nbsp;effective&nbsp;&nbsp;on&nbsp;&nbsp;<b>__/__/20__</b>",
+            `is&nbsp;&nbsp;made&nbsp;effective&nbsp;&nbsp;on&nbsp;&nbsp;<b>${form.agreementDate}</b>`
+          );
         if (
-          res[i] === "<b>Annexure&nbsp;I&nbsp;:&nbsp;Cost&nbsp;of&nbsp;stock images&nbsp;</b>"
-        ) {
-          break;
-        }
+          str.includes(
+            "<b>________________</b>&nbsp;&nbsp;a&nbsp;&nbsp;Company"
+          )
+        )
+          str = str.replace(
+            "<b>________________</b>&nbsp;&nbsp;a&nbsp;&nbsp;Company",
+            `<b>${form.clientName}</b>&nbsp;&nbsp;a&nbsp;&nbsp;Company`
+          );
+        if (str.includes("corporate&nbsp;office&nbsp;at&nbsp;__________"))
+          str = str.replace(
+            "corporate&nbsp;office&nbsp;at&nbsp;__________",
+            `corporate&nbsp;office&nbsp;at&nbsp;<b>${form.clientOffice}</b>`
+          );
+        if (
+          str.includes(
+            "<b>WHEREAS,</b>&nbsp;the Client&nbsp;is&nbsp;engaged&nbsp;in&nbsp;the&nbsp;business&nbsp;of&nbsp;_______________.&nbsp;"
+          )
+        )
+          str = str.replace(
+            "<b>WHEREAS,</b>&nbsp;the Client&nbsp;is&nbsp;engaged&nbsp;in&nbsp;the&nbsp;business&nbsp;of&nbsp;_______________.&nbsp;",
+            `<b>WHEREAS,</b>&nbsp;the Client&nbsp;is&nbsp;engaged&nbsp;in&nbsp;the&nbsp;business&nbsp;of&nbsp;<b>${form.clientBusiness}.</b>&nbsp;`
+          );
+        if (
+          str.includes(
+            "The&nbsp;&nbsp;seat&nbsp;&nbsp;or&nbsp;&nbsp;place&nbsp;&nbsp;of&nbsp;&nbsp;the&nbsp;&nbsp;arbitration&nbsp;&nbsp;shall&nbsp;&nbsp;be&nbsp;&nbsp;Kolkata/&nbsp;<br>____________.&nbsp;"
+          )
+        )
+          str = str.replace(
+            "The&nbsp;&nbsp;seat&nbsp;&nbsp;or&nbsp;&nbsp;place&nbsp;&nbsp;of&nbsp;&nbsp;the&nbsp;&nbsp;arbitration&nbsp;&nbsp;shall&nbsp;&nbsp;be&nbsp;&nbsp;Kolkata/&nbsp;<br>____________.&nbsp;",
+            `The&nbsp;&nbsp;seat&nbsp;&nbsp;or&nbsp;&nbsp;place&nbsp;&nbsp;of&nbsp;&nbsp;the&nbsp;&nbsp;arbitration&nbsp;&nbsp;shall&nbsp;&nbsp;be&nbsp;&nbsp;Kolkata/&nbsp;<br><b>${form.arbitrationPlace}</b>.&nbsp;`
+          );
+        if (str.includes("&nbsp;<br>Name:&nbsp;___________________&nbsp;"))
+          str = str.replace(
+            "&nbsp;<br>Name:&nbsp;___________________&nbsp;",
+            `&nbsp;<br>Name:&nbsp;${form.makerName}&nbsp;`
+          );
+        if (str.includes("&nbsp;<br>Designation:&nbsp;________________&nbsp;"))
+          str = str.replace(
+            "&nbsp;<br>Designation:&nbsp;________________&nbsp;",
+            `&nbsp;<br>Designation:&nbsp;${form.makerDesignation}&nbsp;`
+          );
+        if (str.includes("&nbsp;<br>Date:&nbsp;___/___/20___&nbsp;"))
+          str = str.replace(
+            "&nbsp;<br>Date:&nbsp;___/___/20___&nbsp;",
+            `&nbsp;<br>Date:&nbsp;${form.signatureDate}&nbsp;`
+          );
+        if (str.includes("Signature:&nbsp;&nbsp;"))
+          str = str.replace(
+            "Signature:&nbsp;&nbsp;",
+            `Signature:&nbsp;&nbsp;<img style="height:50px; max-width: 300px; margin-left: 60px;" src="${form.stamp}"/>`
+          );
+        filteredData.push(str);
       }
-      // Append extra HTML (for example, a stock image chart)
-      filteredData.push(`
-        <p>&nbsp;</p>
-        <p>&nbsp;</p>
-        <p>&nbsp;</p>
-        <p>&nbsp;</p>
-        <table class="border-black border-x border-t border-collapse w-full">
-          <tr class="border-black border-b">
-            <th class="border-black border-x border-collapse p-1" colSpan="3">Shutterstock</th>
-          </tr>
-          <tr class="border-black border-b">
-            <td class="border-black border-x border-collapse p-1">Upto 2 images</td>
-            <td class="border-black border-x border-collapse p-1">Upto 5 images</td>
-            <td class="border-black border-x border-collapse p-1">Upto 25 images</td>
-          </tr>
-          <tr class="border-black border-b">
-            <td class="border-black border-x border-collapse p-1">USD 29</td>
-            <td class="border-black border-x border-collapse p-1">USD 49</td>
-            <td class="border-black border-x border-collapse p-1">USD 229</td>
-          </tr>
-          <!-- Additional rows for iStock, Getty, Images Bazaar, etc. -->
-        </table>
-      `);
+
       setExtractedData(filteredData);
     } catch (error) {
       console.error("Error processing PDF:", error);
@@ -106,46 +118,40 @@ const EditText2 = ({ pdfUrl }) => {
 
   // Existing saveFile functionality remains unchanged.
   const saveFile = async () => {
-    // Insert a header image at the top of the PDF container
-    const firstPageHeader = document.createElement("img");
-    firstPageHeader.src = "/header.jpg";
-    firstPageHeader.style.paddingTop = "10px";
-    pdfContainer.current.insertBefore(
-      firstPageHeader,
-      pdfContainer.current.firstChild
-    );
-
-    // Dynamically add page breaks based on the container's children heights
+    // Logic to add page breaks dynamically
     const children = pdfContainer.current.children;
-    const maxPageHeight = 1070;
-    let currentPageHeight = 0;
+    const maxPageHeight = 1050;
     for (let i = 0; i < children.length; i++) {
       if (
-        children[i].offsetHeight >
-        maxPageHeight - pageHeaderImage.current.offsetHeight
+        children[i].offsetHeight > maxPageHeight
+        //  - pageHeaderImage.current.offsetHeight
       ) {
         alert(
           "Element too big to fit in one page. Please divide it into smaller paragraphs."
         );
         return;
       }
-
-      if (currentPageHeight + children[i].offsetHeight > maxPageHeight) {
-        const endDelimeter = document.createElement("div");
-        const headerImage = document.createElement("img");
-        endDelimeter.classList.add("html2pdf__page-break");
-        headerImage.classList.add("mt-3");
-        headerImage.src = "/header.jpg";
-        headerImage.style.paddingTop = "10px";
-        children[i].parentNode.insertBefore(headerImage, children[i]);
-        children[i].parentNode.insertBefore(endDelimeter, children[i]);
-        currentPageHeight =
-          children[i].offsetHeight + pageHeaderImage.current.offsetHeight;
-      } else {
-        currentPageHeight += children[i].offsetHeight;
-      }
     }
-    await html2pdf().from(pdfContainer.current).save();
+    // await html2pdf().from(pdfContainer.current).save();
+
+    const raw = await fetch("http://localhost:4000/convert/html", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json", // Set content type to JSON
+      },
+      body: JSON.stringify({ html: pdfContainer.current.innerHTML }),
+    });
+    const blob = await raw.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = "download";
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
   };
 
   return (
@@ -161,23 +167,85 @@ const EditText2 = ({ pdfUrl }) => {
         <button
           className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
           onClick={() => {
-            saveFile().then(() => (pdfContainer.current.innerHTML = ""));
+            saveFile().then(() => {
+              alert("File downloaded successfully.");
+            });
           }}
         >
           Download
         </button>
+
+        <button
+          className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
+          onClick={(e) => {
+            document.execCommand("bold", false, null);
+          }}
+        >
+          <b>B</b>
+        </button>
+
+        <button
+          className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
+          onClick={(e) => {
+            document.execCommand("italic", false, null);
+          }}
+        >
+          <i>I</i>
+        </button>
+
+        <button
+          className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
+          onClick={(e) => {
+            document.execCommand("underline", false, null);
+          }}
+        >
+          <u>U</u>
+        </button>
+
+        <button
+          className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
+          onClick={(e) => {
+            e.preventDefault();
+            document.execCommand("insertOrderedList");
+          }}
+        >
+          OL
+        </button>
+        <button
+          className="rounded-md px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black"
+          onClick={(e) => {
+            e.preventDefault();
+            document.execCommand("insertUnorderedList");
+          }}
+        >
+          UL
+        </button>
       </div>
-      {/* Dummy image used to compute header height */}
-      <img src="/header.jpg" ref={pageHeaderImage} hidden />
-      <div className="flex justify-center">
+      <div className="flex justify-center h-[70vh] border-2 w-fit mx-auto">
         <div
+          style={{
+            width: "720px",
+          }}
           contentEditable={true}
-          className="w-[800px] px-8"
+          className="px-6 overflow-auto border-none outline-none"
           ref={pdfContainer}
         >
+          <div></div>
+
           {extractedData.map((data, index) =>
-            // Using a regular paragraph for each HTML chunk; adjust as needed.
-            <p key={index} dangerouslySetInnerHTML={{ __html: data }}></p>
+            page_end_delimeter.test(data) ? (
+              <span key={index}></span>
+            ) : (
+              <p
+                style={{
+                  fontSize: "16px",
+                  fontFamily: "Arial, Helvetica, sans-serif",
+                  lineHeight: "22px",
+                }}
+                key={index}
+                dangerouslySetInnerHTML={{ __html: data }}
+              ></p>
+            )
           )}
         </div>
       </div>
@@ -186,3 +254,23 @@ const EditText2 = ({ pdfUrl }) => {
 };
 
 export default EditText2;
+
+const page_end_delimeter = /<i>\d+\/\d+&nbsp;<\/i>/i;
+
+function toDataURL(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.onload = function () {
+    var reader = new FileReader();
+    reader.onloadend = function () {
+      callback(reader.result);
+    };
+    reader.readAsDataURL(xhr.response);
+  };
+  xhr.open("GET", url);
+  xhr.responseType = "blob";
+  xhr.send();
+}
+
+// toDataURL('https://www.gravatar.com/avatar/d50c83cc0c6523b4d3f6085295c953e0', function(dataUrl) {
+//   console.log('RESULT:', dataUrl)
+// })

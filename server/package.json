@@ -11,7 +11,10 @@
     "nodemon": "^3.1.9",
     "path": "^0.12.7",
     "pdf-lib": "^1.17.1",
-    "pizzip": "^3.1.7"
+    "pdf2html": "^3.1.0",
+    "pdfkit": "^0.16.0",
+    "pizzip": "^3.1.7",
+    "puppeteer": "^24.1.1"
   },
   "scripts": {
     "start": "node app.js",
