@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import DynamicTableForm from "./DynamicTableForm";
 
 // Now EditText2 receives a pdfUrl prop
 const EditText2 = ({ pdfUrl, form, setMandateEditingView }) => {
@@ -141,6 +142,7 @@ const EditText2 = ({ pdfUrl, form, setMandateEditingView }) => {
 
   return (
     <>
+    {/* <DynamicTableForm/> */}
       {/* Removed the file input since we are using the URL */}
       <div className="flex flex-wrap justify-center gap-4 my-4 items-center">
         <button

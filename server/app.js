@@ -173,15 +173,25 @@ async function convertToPdf(htmlContent) {
   await page.waitForFunction(() => {
     const cells = document.getElementsByTagName("td");
     for (let i = 0; i < cells.length; i++) {
-      cells[i].style.border = "1px solid black"
+      cells[i].style.border = "1px solid black";
     }
-    const headings = document.getElementsByTagName("th")
+    const headings = document.getElementsByTagName("th");
     for (let i = 0; i < headings.length; i++) {
-      headings[i].style.border = "1px solid black"
+      headings[i].style.border = "1px solid black";
     }
-    const tables = document.getElementsByTagName("table")
+    const tables = document.getElementsByTagName("table");
     for (let i = 0; i < tables.length; i++) {
-      tables[i].style.borderCollapse = "collapse"
+      tables[i].style.borderCollapse = "collapse";
+    }
+
+    const inputs = document.getElementsByTagName("input");
+    for (let i = 0; i < inputs.length; i++) {
+      inputs[i].style.border = "";
+      inputs[i].style.outline = "";
+      inputs[i].style.backgroundColor = "";
+      inputs[i].style.boxShadow = ""
+      inputs[i].style.all = "unset"
+      
     }
     return 1;
   });
